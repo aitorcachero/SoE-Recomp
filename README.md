@@ -64,8 +64,8 @@ A native Windows 64-bit port of **Secret of Evermore** (Spanish release / PAL), 
 ### Build Steps
 
 ```cmd
-git clone --recursive https://github.com/your-username/SecretOfEvermoreSNESRecomp.git
-cd SecretOfEvermoreSNESRecomp
+git clone --recursive https://github.com/your-username/SoE-Recomp.git
+cd SoE-Recomp
 COMPILAR.bat
 ```
 

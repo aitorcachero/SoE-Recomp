@@ -64,8 +64,8 @@ Port nativo para Windows 64-bit del clásico de Super Nintendo **Secret of Everm
 ### Pasos de compilación
 
 ```cmd
-git clone --recursive https://github.com/tu-usuario/SecretOfEvermoreSNESRecomp.git
-cd SecretOfEvermoreSNESRecomp
+git clone --recursive https://github.com/tu-usuario/SoE-Recomp.git
+cd SoE-Recomp
 COMPILAR.bat
 ```
 
