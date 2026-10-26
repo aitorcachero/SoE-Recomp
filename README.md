@@ -1,115 +1,109 @@
-# Secret of Evermore Recomp
+# Secret of Evermore SNES Recomp (Native PC Port)
 
-A native recompilation of **Secret of Evermore** (ESP), built on
-[snesrecomp](https://github.com/RetroPortingToolKit/snesrecomp).
+A native Windows 64-bit port of **Secret of Evermore** (Spanish release / PAL), reverse-engineered and recompiled using modern static recompilation principles and the [snesrecomp](https://github.com/RetroPortingToolKit/snesrecomp) framework.
 
-_Add a short description here._
+---
 
+## 🌟 Key Features
 
+* **🖥️ 1080p / 4K Ultra HD Support:** Runs natively on modern PC resolutions with crystal-clear rendering.
+* **📺 16:9 Fullscreen (Zero Texture Pop-in):** Full-screen presentation utilizing authentic 2D streaming architecture (Alundra-style) so all background maps and tiles are preloaded without edge chunk pop-in.
+* **🎨 Modern Anti-Aliasing & Post-Processing Shaders:**
+  * **HD-2D Remaster:** Sub-pixel edge anti-aliasing, micro-contrast enhancement, and dynamic color vibrance expanding the SNES 15-bit color palette into modern 24-bit dynamic range.
+  * **xBR-lv2 Anti-Aliasing:** Smart vector-like edge interpolation that eliminates pixel stair-stepping ("dientes de sierra") without blurring.
+  * **FXAA Retro:** Fast Approximate Anti-Aliasing for smooth edge transitions.
+  * **Smooth Bicubic:** Catmull-Rom texture smoothing.
+  * **CRT Soft & Warm Composite:** Authentic scanline simulation and vintage TV warmth.
+  * **Sharp HD:** Razor-sharp pixel-art scaling.
+* **🎮 Full Controller & Gamepad Support:** Native plug-and-play support for Xbox, DualShock/DualSense, Switch Pro, and standard SDL3 controllers with configurable button mapping.
+* **⏪ Real-time Rewind & Save States:** Rewind up to 60 seconds with F12 / controller shortcuts, quick save (Shift+F1..F10) and quick load (F1..F10).
+* **✨ Fixed Name Entry Screen:** Mode 5/6 high-resolution pillarbox margin clearing to eliminate graphical glitches and side-duplication.
+* **📖 Full Prologue & Story Flow:** Factory-clean SRAM initialization ensuring the complete 1965/1995 Podunk introductory sequence always plays on New Game.
+* **⚡ 60 FPS Frame Pacing:** Beam-synchronized hardware frame delivery with low-latency audio via WASAPI.
 
-> **You must legally own a copy of the game.** No ROM data is distributed with
-> this project, in the repository or in any release. The recompiled C is
-> generated locally from your own copy and is never committed.
+---
 
-## Status
+## ⚖️ Legal Disclaimer
 
-Scaffolded on 2026-10-26 — **not yet a working port.** The layout, build,
-regeneration pipeline, CI, and packaging are wired up; the game does not run
-until the host work in `src/game_rtl.c` is done. See
-[Porting from here](#porting-from-here).
+> **You must legally own a copy of the game.**  
+> No copyrighted ROM files or copyrighted assets are included in this repository. The port verifies and loads your legally obtained copy of `Secret of Evermore (ESP).sfc` at runtime.
 
-## ROM identity
+### Required ROM Information
 
-| | |
-|---|---|
-| File | `Secret of Evermore (ESP).smc` |
-| Publisher | — |
-| Developer | — |
-| Year | — |
-| Mapping | hirom |
-| Region | ESP (Spain) |
-| Coprocessor | none |
-| CRC32 | `7bfe934f` |
-| SHA-256 | `3c7e2101b6fc8d63fa5e6341629eef4a5d8f69c99a8826a90bc5417c5bb48bf1` |
+| Property | Value |
+| :--- | :--- |
+| **Title** | Secret of Evermore |
+| **Region** | Spain / ESP |
+| **Filename** | `Secret of Evermore (ESP).sfc` (or `.smc`) |
+| **Internal Mapping** | HiROM |
+| **CRC32** | `7bfe934f` |
+| **SHA-256** | `3c7e2101b6fc8d63fa5e6341629eef4a5d8f69c99a8826a90bc5417c5bb48bf1` |
 
-`tools/regen.sh` refuses to run against anything else, so a mismatched
-revision fails immediately instead of producing subtly wrong output.
+---
 
-## Build
+## 🚀 Quick Start (Running the Game)
 
-```sh
-git submodule update --init --recursive
-bash tools/regen.sh --rom /path/to/Secret of Evermore (ESP).smc
-cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
-cmake --build build -j
+1. Place your legally dumped ROM `Secret of Evermore (ESP).sfc` into the project root or build folder.
+2. Launch with your preferred display profile:
+   * **`JUGAR_16_9.bat`**: Fullscreen 16:9, Zero Pop-in, Preloaded Textures & HD-2D Shader.
+   * **`JUGAR_SIN_VENTANAS.vbs`**: Silent direct launch without CMD console window.
+   * **`JUGAR_4_3.bat`**: Classic 4:3 Pixel-Perfect original aspect ratio.
+   * **`JUGAR_HACK_16_9.bat`**: Extended field-of-view widescreen canvas.
+   * **`LAUNCHER.bat`**: Graphical GUI launcher to customize resolution, keybinds, audio, and shaders.
+
+---
+
+## 🛠️ Building from Source
+
+### Prerequisites
+* Windows 10/11 64-bit
+* Visual Studio 2022 (Community or BuildTools) with C/C++ desktop development workload
+* CMake 3.20+
+* Git
+
+### Build Steps
+
+```cmd
+git clone --recursive https://github.com/your-username/SecretOfEvermoreSNESRecomp.git
+cd SecretOfEvermoreSNESRecomp
+COMPILAR.bat
 ```
 
-The ROM does not have to live in the repository — keeping it on your own
-drive is the better habit, and `SNESRECOMP_ROM` sets the path once for a
-shell. Without either, `tools/regen.sh` finds `Secret of Evermore (ESP).smc` at the repo root,
-then the path the setup wizard recorded in `rom.cfg`; `.gitignore` blocks
-both from ever being committed.
-
-`tools/regen.sh` verifies the ROM, generates `src/gen/*.c`, and re-syncs
-`recomp/funcs.h`. Re-run it whenever you change anything under `recomp/`.
-
-## Run
-
-```sh
-./build/SecretOfEvermoreSNESRecomp                     # launcher picks the ROM
-./build/SecretOfEvermoreSNESRecomp /path/to/Secret of Evermore (ESP).smc # or name it and skip the launcher
+Or manually with CMake:
+```cmd
+cmake -B build -S .
+cmake --build build --config Release
 ```
 
-With no ROM on the command line the build opens the recomp-ui launcher: a ROM
-picker with a verification badge, plus display / audio / input settings. Your
-choice is cached in `rom.cfg` beside the executable, so the next launch opens
-on it and "Skip launcher on boot" makes it immediate. If the launcher is not
-built in (`--no-recomp-ui`), the host falls back to a native file picker.
+---
 
-Either way the ROM is checked against the digests above before anything boots
-— a dump that could not have produced this build is refused at the door rather
-than mis-executing ten frames in.
+## 🕹️ Controls & Hotkeys
 
-## Layout
+### Default Keyboard Controls
+| Action | Key |
+| :--- | :--- |
+| **Movement** | Arrow Keys (Up, Down, Left, Right) |
+| **Attack / Confirm (B)** | Z |
+| **Run / Cancel (A)** | X |
+| **Ring Menu (Y)** | A |
+| **Dog Switch (X)** | S |
+| **L / R** | C / V |
+| **Start** | Return (Enter) |
+| **Select** | Right Shift |
 
-| Path | What lives there |
-|---|---|
-| `recomp/` | Analysis input: `bank*.cfg`, `symbols.toml`, generated `funcs.h` |
-| `rom_identity.txt` | ROM digests — read by the build, `tools/regen.sh` and CI |
-| `src/` | Host code you own: `main.c`, `game_rtl.c` |
-| `src/gen/` | Generated C. Never committed — regenerate locally |
-| `snesrecomp/` | Framework submodule (owns `lib/recomp-net`, `lib/retcomm-rbengine`) |
-| `tools/` | `regen.sh` — the ROM → C pipeline |
-| `scripts/` | `package_release.sh` — player-facing zip |
-| `framework_pins.txt` | Exact framework commits this project was scaffolded against |
+### Shortcuts
+* **Alt + Enter:** Toggle Fullscreen
+* **F12:** Rewind
+* **Shift + F1..F10:** Quick Save slot 1..10
+* **F1..F10:** Quick Load slot 1..10
+* **Tab:** Fast-Forward / Turbo
+* **P:** Pause
+* **F:** Display Performance / FPS Overlay
 
-## Porting from here
+---
 
-The scaffold stops where the game-specific work starts. In rough order:
+## 📜 Credits & License
 
-1. **Make it boot.** `src/game_rtl.c` holds the frame driver. It starts on
-   the framework's beam-aligned driver (`snesrecomp/runner/src/beam_frame_driver.h`):
-   one frame per PPU field, interrupts taken where the beam latches them,
-   the field rasterized from the raster journal. A title whose main loop it
-   does not fit replaces those calls with its own driver.
-2. **Name things.** Add entries to `recomp/symbols.toml` as you identify
-   routines, then re-run `tools/regen.sh`. Set `emit = true` to promote one
-   into ahead-of-time analysis; leave it false to keep it interpreted.
-   Regen synchronizes the marked blocks in each bank cfg, creating missing
-   configs. Only proven variants become AOT code. See `recomp/README.md`.
-3. **Resolve dispatch misses.** After every run, deal with unresolved
-   indirect targets before anything else — they are the reason a port
-   diverges, and they are cheap to fix early.
-4. **Never synthesise a result** to get past uncovered code, and never edit
-   `src/gen/` by hand. Fix the config or the framework and regenerate.
-
-## Multiplayer
-
-Two players, one controller per port.
-
-## License
-
-This project's own source is under the license in `LICENSE`. The framework
-carries its own terms — see `snesrecomp/LICENSE` and
-`snesrecomp/THIRD_PARTY_ATTRIBUTION.md`. Neither covers the game data, which
-is not distributed here.
+* Developed using the **snesrecomp** framework by RetroPortingToolKit.
+* Original game © 1995 Square Co., Ltd. / SquareSoft.
+* Shaders provided under MIT / CC0-1.0 public domain.

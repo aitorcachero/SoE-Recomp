@@ -6,12 +6,21 @@
 *.sfc
 *.smc
 *.srm
+*.bin
+*.tsv
+*.bgrx
+*.bmp
+title_fill.*
+last_run_report.json
 
 # Build trees and packaged output
 /build/
 /build-*/
 /dist/
 /saves/
+.vs/
+*.user
+*.suo
 
 # Local probe output that names paths on one machine
 /rom_probe.json
