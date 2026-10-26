@@ -1,0 +1,26 @@
+# ROM identity for Secret of Evermore — the single source of truth.
+#
+# Read by three consumers, so a revision change is made once, here:
+#   - the build   (CMake generates snesrecomp_rom_identity.h from this file)
+#   - tools/regen.sh
+#   - .github/workflows/release.yml
+#
+# Format is `key = value`, one per line; `#` starts a comment. Values may be
+# quoted. Leaving a digest empty means the build cannot verify a ROM it is
+# handed — it will say so rather than accept it.
+
+display_name    = Secret of Evermore
+rom_file        = Secret of Evermore (ESP).smc
+# Every digest of the bare image (copier header stripped), so the Retro
+# catalog can take a submission's identity from this file rather than ask
+# the submitter to hash the ROM again. The build verifies on crc32/sha256.
+expected_crc32  = 7bfe934f
+expected_md5    = f6516a3b18c262ec00cd4348921c3897
+expected_sha1   = 4363ce4b19e76261f9325ac9a0cce27d97490df2
+expected_sha256 = 3c7e2101b6fc8d63fa5e6341629eef4a5d8f69c99a8826a90bc5417c5bb48bf1
+rom_size        = 3145728
+mapping         = hirom
+region          = ESP
+# What a mod package's [[target]] game_id must name to apply to this title
+# (snesrecomp/docs/MOD_PACKAGES.md). Stable across revisions on purpose.
+game_id         = secretofevermore-esp
