@@ -185,7 +185,7 @@ static void save_snes_config(const char *config_path, int fullscreen, int window
 
     fprintf(f, "[Graphics]\n");
     fprintf(f, "DisplayAspect = %s\n", aspect_str);
-    fprintf(f, "Widescreen = %d\n", (display_aspect == 1 || display_aspect == 2 || widescreen) ? 1 : 0);
+    fprintf(f, "Widescreen = %d\n", (display_aspect == 1 || display_aspect == 2) ? 1 : 0);
     fprintf(f, "IgnoreAspectRatio = %d\n", (display_aspect == 3) ? 1 : 0);
     fprintf(f, "Fullscreen = %d\n", fullscreen ? 1 : 0);
     fprintf(f, "WindowScale = %d\n", window_scale);
@@ -291,6 +291,19 @@ extern "C" int run_snes_modern_launcher(
             "Illusion of Time (ESP).sfc", "Illusion of Time.sfc", "Illusion of Gaia.sfc",
             "Terranigma (ESP).sfc", "Terranigma.sfc",
             "Secret of Evermore (ESP).sfc", "Secret of Evermore.sfc",
+            "Ys III - Wanderers from Ys (ESP).sfc", "Ys III - Wanderers from Ys (ESP).smc",
+            "Ys III - Wanderers from Ys.sfc", "Ys III.sfc",
+            "The Legend of Zelda - A Link to the Past (ESP).sfc", "The Legend of Zelda - A Link to the Past (ESP).smc",
+            "The Legend of Zelda - A Link to the Past.sfc", "Zelda.sfc",
+            "Final Fantasy - Magic Quest (ESP).smc", "Final Fantasy - Magic Quest (ESP).sfc", "Final Fantasy - Mystic Quest.sfc",
+            "Final Fantasy II (ESP).smc", "Final Fantasy II (ESP).sfc", "Final Fantasy II.sfc",
+            "Final Fantasy III (ESP).smc", "Final Fantasy III (ESP).sfc", "Final Fantasy III.sfc",
+            "Final Fantasy IV (ESP).smc", "Final Fantasy IV (ESP).sfc", "Final Fantasy IV.sfc",
+            "Final Fantasy V (ESP).smc", "Final Fantasy V (ESP).sfc", "Final Fantasy V.sfc",
+            "Final Fantasy VI (ESP).smc", "Final Fantasy VI (ESP).sfc", "Final Fantasy VI.sfc",
+            "Lufia & The Fortress of Doom (ESP).SMC", "Lufia & The Fortress of Doom (ESP).sfc", "Lufia & The Fortress of Doom.sfc",
+            "Lufia II - Rise of the Sinistrals (ESP).smc", "Lufia II - Rise of the Sinistrals (ESP).sfc", "Lufia II - Rise of the Sinistrals.sfc",
+            "Lufia (ESP).sfc", "Lufia (ESP).smc", "Lufia.sfc",
             "rom.sfc", "rom.smc", NULL
         };
         for (int i = 0; candidates[i]; i++) {
@@ -500,6 +513,10 @@ extern "C" int run_snes_modern_launcher(
     bool is_iot = (strstr(game_display_title, "Illusion") != NULL);
     bool is_terra = (strstr(game_display_title, "Terranigma") != NULL);
     bool is_soe = (strstr(game_display_title, "Evermore") != NULL);
+    bool is_ys = (strstr(game_display_title, "Ys") != NULL);
+    bool is_zelda = (strstr(game_display_title, "Zelda") != NULL || strstr(game_display_title, "Link") != NULL);
+    bool is_ff = (strstr(game_display_title, "Final Fantasy") != NULL);
+    bool is_lufia = (strstr(game_display_title, "Lufia") != NULL);
 
     while (running) {
         SDL_Event event;
@@ -628,7 +645,11 @@ extern "C" int run_snes_modern_launcher(
         if (font_bold) ImGui::PushFont(font_bold);
         const char *game_sub = is_iot ? "Super Nintendo | Enix / Quintet [Español]" :
                                (is_terra ? "Super Nintendo | Enix / Quintet [Español]" :
-                               (is_soe ? "Super Nintendo | Squaresoft [Español]" : "Super Nintendo - PAL/ESP"));
+                               (is_soe ? "Super Nintendo | Squaresoft [Español]" :
+                               (is_ys ? "Super Nintendo | Nihon Falcom / Tonkin House [Español]" :
+                               (is_zelda ? "Super Nintendo | Nintendo [Español]" :
+                               (is_ff ? "Super Nintendo | Squaresoft [Español]" :
+                               (is_lufia ? "Super Nintendo | Taito / Neverland [Español]" : "Super Nintendo - PAL/ESP"))))));
         draw->AddText(ImVec2(28.0f * scale, win_h - 90.0f * scale), IM_COL32(255, 130, 0, 255), game_sub);
         if (font_bold) ImGui::PopFont();
 
@@ -833,7 +854,7 @@ extern "C" int run_snes_modern_launcher(
                 } else {
                     if (ImGui::Button(ws_modes[m], ImVec2(bw, 36.0f * scale))) {
                         display_aspect = m_aspect;
-                        widescreen = (m_aspect != 0) ? 1 : 0;
+                        widescreen = (m_aspect == 1 || m_aspect == 2) ? 1 : 0;
                         active_preset = 3;
                     }
                 }
@@ -1117,7 +1138,44 @@ extern "C" int run_snes_modern_launcher(
                     { "Salir del Juego", "Escape (Esc)", "Botón Back / Select" }
                 };
 
-                const char *(*act_table)[3] = is_iot ? actions_iot : (is_terra ? actions_terra : actions_soe);
+                const char *actions_ys[][3] = {
+                    { "Mover a Adol", "Flechas de direcci\xc3\xb3n / W A S D", "D-Pad y Stick Izquierdo" },
+                    { "Atacar con espada", "Z  /  Espacio", "Bot\xc3\xb3n A (PlayStation Cruz)" },
+                    { "Saltar", "X", "Bot\xc3\xb3n B (PlayStation C\xc3\xad" "rculo)" },
+                    { "Agacharse / Defender", "Flecha Abajo / S", "D-Pad Abajo / Stick Abajo" },
+                    { "Usar Anillo / Magia", "A  /  Shift", "Bot\xc3\xb3n X (PlayStation Cuadrado)" },
+                    { "Men\xc3\xba de Estado / \xc3\x8dtems", "Enter / Intro", "Bot\xc3\xb3n Start / Options" },
+                    { "Pantalla Completa", "Alt + Enter  /  F11", "Gu\xc3\xad" "a / Touchpad" },
+                    { "Salir del Juego", "Escape (Esc)", "Bot\xc3\xb3n Back / Select" }
+                };
+
+                const char *actions_zelda[][3] = {
+                    { "Mover a Link", "Flechas de direcci\xc3\xb3n / W A S D", "D-Pad y Stick Izquierdo" },
+                    { "Espada / Ataque Giro", "Z  /  Espacio", "Bot\xc3\xb3n A (PlayStation Cruz)" },
+                    { "Usar \xc3\x8dtem Secundario", "X", "Bot\xc3\xb3n B (PlayStation C\xc3\xad" "rculo)" },
+                    { "Correr (Botas) / Agarrar", "A  /  Shift", "Bot\xc3\xb3n X (PlayStation Cuadrado)" },
+                    { "Hablar / Levantar", "C  /  V", "Bot\xc3\xb3n Y (PlayStation Tri\xc3\xa1ngulo)" },
+                    { "Mapa del Mundo", "Right Shift", "Bot\xc3\xb3n Select / Share" },
+                    { "Men\xc3\xba de Inventario", "Enter / Intro", "Bot\xc3\xb3n Start / Options" },
+                    { "Salir del Juego", "Escape (Esc)", "Bot\xc3\xb3n Back / Select" }
+                };
+
+                const char *actions_rpg[][3] = {
+                    { "Mover personaje", "Flechas de direcci\xc3\xb3n / W A S D", "D-Pad y Stick Izquierdo" },
+                    { "Confirmar / Hablar / Acci\xc3\xb3n", "Z  /  Espacio", "Bot\xc3\xb3n A (PlayStation Cruz)" },
+                    { "Cancelar / Correr / Volver", "X", "Bot\xc3\xb3n B (PlayStation C\xc3\xad" "rculo)" },
+                    { "Men\xc3\xba de Objetos / Magia", "C  /  V", "Bot\xc3\xb3n Y (PlayStation Tri\xc3\xa1ngulo)" },
+                    { "Cambiar l\xc3\xadder / Fila", "A  /  Shift", "Gatillos LB / RB (L / R)" },
+                    { "Men\xc3\xba Principal / Pausa", "Enter / Intro", "Bot\xc3\xb3n Start / Options" },
+                    { "Pantalla Completa", "Alt + Enter  /  F11", "Gu\xc3\xad" "a / Touchpad" },
+                    { "Salir del Juego", "Escape (Esc)", "Bot\xc3\xb3n Back / Select" }
+                };
+
+                const char *(*act_table)[3] = is_iot ? actions_iot :
+                                              (is_terra ? actions_terra :
+                                              (is_soe ? actions_soe :
+                                              (is_ys ? actions_ys :
+                                              (is_zelda ? actions_zelda : actions_rpg))));
 
                 for (int r = 0; r < 8; r++) {
                     ImGui::TableNextRow();
