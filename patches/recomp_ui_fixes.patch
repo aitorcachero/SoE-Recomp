@@ -1,0 +1,51 @@
+diff --git a/recomp_ui.cmake b/recomp_ui.cmake
+index 1c9b92a..24ebbe6 100644
+--- a/recomp_ui.cmake
++++ b/recomp_ui.cmake
+@@ -215,6 +215,7 @@ function(recomp_target_launcher_ui TGT)
+         ${RUI_SRC}/common/recomp_flash_guard.c # shared photosensitivity flash filter
+         ${RUI_SRC}/common/launcher_boot_timing.c  # PSX_LAUNCHER_BOOT_TIMING / LNG_BOOT_TIMING
+         ${RUI_SRC}/common/launcher_ng_capi.c   # implements recomp_launcher_run_window()
++        ${RUI_SRC}/common/snes_modern_launcher.cpp
+         ${RUI_SRC}/common/launcher_i18n.cpp
+         ${RUI_SRC}/common/launcher_mod_visibility.c # which mod features/packages the player sees
+         # color emoji for chat: scanner + per-platform rasterizers (each
+diff --git a/src/common/backends/imgui/launcher_imgui.cpp b/src/common/backends/imgui/launcher_imgui.cpp
+index 5143884..068d151 100644
+--- a/src/common/backends/imgui/launcher_imgui.cpp
++++ b/src/common/backends/imgui/launcher_imgui.cpp
+@@ -14821,7 +14821,7 @@ std::string asset(const char* rel) {
+     if (is_absolute_path(path)) return path;
+ 
+ #if defined(__ANDROID__)
+-    const char* base = SDL_AndroidGetInternalStoragePath();
++    const char* base = SDL_GetAndroidInternalStoragePath();
+ #else
+     const char* base = SDL_GetBasePath();
+ #endif
+diff --git a/src/common/launcher_ng_capi.c b/src/common/launcher_ng_capi.c
+index a2eb587..4176e21 100644
+--- a/src/common/launcher_ng_capi.c
++++ b/src/common/launcher_ng_capi.c
+@@ -162,12 +162,21 @@ fail:
+     return 1;
+ }
+ 
++int run_snes_modern_launcher(const char* window_title,
++                             RecompLauncherCSettings* io,
++                             const RecompLauncherCGameInfo* game,
++                             const char* assets_dir,
++                             const char* initial_rom,
++                             char* out_rom_path, size_t out_rom_path_len);
++
+ int recomp_launcher_run_window(const char* window_title,
+                              RecompLauncherCSettings* io,
+                              const RecompLauncherCGameInfo* game,
+                              const char* assets_dir,
+                              const char* initial_rom,
+                              char* out_rom_path, size_t out_rom_path_len) {
++    return run_snes_modern_launcher(window_title, io, game, assets_dir, initial_rom, out_rom_path, out_rom_path_len);
++
+     (void)assets_dir;   // launcher_ng resolves assets next to the exe (SDL base path)
+     g_last_relaunch_exe[0] = '\0';
+ 

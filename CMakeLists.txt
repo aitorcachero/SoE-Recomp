@@ -36,13 +36,20 @@ set(SNESRECOMP_ENABLE_MODS ON CACHE BOOL
     "Mod package loader + trusted plugins (required for every title)" FORCE)
 include(${SNESRECOMP_ROOT}/runner/runner.cmake)
 
-add_executable(SecretOfEvermoreSNESRecomp
+set(SOE_SOURCES
     ${SNESRECOMP_RUNNER_SOURCES}
     src/main.c
     src/host_contract.c
     src/game_rtl.c
     src/gen_stubs.c
 )
+
+if(ANDROID)
+    add_library(SecretOfEvermoreSNESRecomp SHARED ${SOE_SOURCES})
+    set_target_properties(SecretOfEvermoreSNESRecomp PROPERTIES OUTPUT_NAME main)
+else()
+    add_executable(SecretOfEvermoreSNESRecomp ${SOE_SOURCES})
+endif()
 
 # ROM identity. rom_identity.txt is the one place the digests live: the build
 # turns it into snesrecomp_rom_identity.h (SNESRECOMP_ROM_EXPECTED_SHA256 and
@@ -126,11 +133,13 @@ recomp_target_launcher_ui(SecretOfEvermoreSNESRecomp CONSOLE snes
 # project contributes no configuration (snesrecomp_codegen_host_autowire in
 # src/main.c). recomp-ui/src is on the include path because the host speaks
 # RecompLauncherCGameInfo.
-target_sources(SecretOfEvermoreSNESRecomp PRIVATE
-    ${SNESRECOMP_ROOT}/host/snesrecomp_codegen_host.c)
-target_include_directories(SecretOfEvermoreSNESRecomp PRIVATE
-    ${SNESRECOMP_ROOT}/host
-    ${RECOMP_UI_ROOT}/src)
+if(NOT ANDROID)
+    target_sources(SecretOfEvermoreSNESRecomp PRIVATE
+        ${SNESRECOMP_ROOT}/host/snesrecomp_codegen_host.c)
+    target_include_directories(SecretOfEvermoreSNESRecomp PRIVATE
+        ${SNESRECOMP_ROOT}/host
+        ${RECOMP_UI_ROOT}/src)
+endif()
 
 # Netplay is not built into this target.
 # No multitap: two seats, one controller per port.

@@ -11,6 +11,7 @@
 #include "desktop/config.h"
 #include "snes/ppu.h"
 #include "widescreen.h"
+#include "snes/ws_shadow.h"
 
 #ifndef __ANDROID__
 #define SDL_MAIN_HANDLED 1
@@ -28,25 +29,57 @@
 extern Ppu *g_ppu;
 extern uint8 g_ram[0x20000];
 
+static const char *const kSoeAspectLabels[] = {
+    "4:3 (Original Cl\xc3\xa1sico)",
+    "16:9 Panor\xc3\xa1mico (Hack FOV)",
+    "16:10 Panor\xc3\xa1mico (Steam Deck)",
+    "Pantalla Completa (Estirado)",
+};
+
 static void SoePrepareFrame(int dw, int dh, int *w, int *h)
 {
     (void)dw; (void)dh;
-    if (g_config.widescreen) {
+    if (g_config.display_aspect == 1) {
         *w = 384; /* 16:9 widescreen canvas: 256 + 2 * 64 */
+    } else if (g_config.display_aspect == 2) {
+        *w = 352; /* 16:10 widescreen canvas: 256 + 2 * 48 (Steam Deck 1280x800) */
     } else {
         *w = 256;
     }
     *h = 224;
 }
 
+static void SoeComputeViewport(int frame_w, int frame_h, int drawable_w, int drawable_h,
+                              SnesDisplayViewport *viewport)
+{
+    (void)frame_w; (void)frame_h;
+    if (!viewport) return;
+    if (g_config.display_aspect == 0) {
+        *viewport = SnesDisplayAspect_FitViewport(4.0 / 3.0, drawable_w, drawable_h);
+    } else if (g_config.display_aspect == 1) {
+        *viewport = SnesDisplayAspect_FitViewport(16.0 / 9.0, drawable_w, drawable_h);
+    } else if (g_config.display_aspect == 2) {
+        *viewport = SnesDisplayAspect_FitViewport(16.0 / 10.0, drawable_w, drawable_h);
+    } else {
+        viewport->x = 0;
+        viewport->y = 0;
+        viewport->width = drawable_w > 0 ? drawable_w : 1;
+        viewport->height = drawable_h > 0 ? drawable_h : 1;
+    }
+}
+
+
 static void SoeBeginFrame(unsigned number)
 {
     (void)number;
     if (!g_ppu) return;
-    if (!g_config.widescreen) {
+    if (g_config.display_aspect != 1 && g_config.display_aspect != 2 && !g_config.widescreen) {
         PpuSetExtraSpace(g_ppu, 0);
         return;
     }
+
+    int budget = (g_config.display_aspect == 2) ? 48 : 64;
+    PpuSetExtraSpaceCentered(g_ppu, budget);
 
     /* Mode 5 and 6 are high-resolution 512px menus/dialogue/name-entry screens.
      * When active, clamp margins to 0 so menus are centered and 100% clean with black pillarboxes. */
@@ -56,7 +89,7 @@ static void SoeBeginFrame(unsigned number)
     }
 
     if (PPU_mode(g_ppu) == 7) {
-        PpuSetExtraSpace(g_ppu, 64);
+        PpuSetExtraSpace(g_ppu, budget);
         return;
     }
 
@@ -67,7 +100,7 @@ static void SoeBeginFrame(unsigned number)
     uint32_t camY = (uint32_t)(g_ram[0x5b] | (g_ram[0x5c] << 8));
     uint16_t mapW = (uint16_t)(g_ram[0x8ee] | (g_ram[0x8ef] << 8));
 
-    int budget = 64;
+    /* budget already defined */
     int extraLeft = budget;
     int extraRight = budget;
 
@@ -124,7 +157,12 @@ static const SnesDesktopHostGame kGameHost = {
     .native_widescreen   = 1,
     .display_aspect_supported = 1,
     .shader_supported    = 1,
+    .aspect_labels       = kSoeAspectLabels,
+    .num_aspect_labels   = 4,
+    .aspect_setting_label = "Modo de Pantalla",
+    .aspect_setting_help  = "4:3 clasico original, 16:9 Panoramico, 16:10 Steam Deck o Pantalla Completa estirada.",
     .prepare_frame       = SoePrepareFrame,
+    .compute_viewport    = SoeComputeViewport,
     .begin_sim_frame     = SoeBeginFrame,
 };
 
